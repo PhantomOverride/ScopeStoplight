@@ -1,0 +1,13 @@
+body {
+  width: 400px;
+  padding:5px;
+}
+
+textarea {
+	width:90%;
+	height:8em;
+}
+
+button {
+	width:90%;
+}
