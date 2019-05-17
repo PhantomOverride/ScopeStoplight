@@ -1,3 +1,4 @@
+// Toggle console.log debug output for plugin troubleshooting
 var debug = false;
 
 function indicateTabPositive(tabId) {
