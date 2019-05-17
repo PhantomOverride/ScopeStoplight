@@ -1,3 +1,5 @@
+var debug = false;
+
 function indicateTabPositive(tabId) {
   browser.pageAction.setIcon(
       {
@@ -30,7 +32,7 @@ function getScope(){
   gettingScope.then(
     function(newScope){
       scope = newScope.scope;
-      console.log("Background.js setting scope: " + scope);
+      debugPrint("Background.js setting scope: " + scope);
     }
     ,
     onError
@@ -38,7 +40,15 @@ function getScope(){
 }
 
 function onError(error) {
-  console.log(error);
+  if(debug){
+    console.log(error);
+  }
+}
+
+function debugPrint(message) {
+  if(debug){
+    console.log(message);
+  }
 }
 
 function matchesScope(url) {

@@ -1,5 +1,9 @@
+var debug = false;
+
 function onError(error) {
-  console.log("Error: " + error);
+	if(debug){
+		console.log("Error: " + error);
+	}
 }
 
 function setScope(){
