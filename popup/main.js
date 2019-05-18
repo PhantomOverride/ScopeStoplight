@@ -1,5 +1,5 @@
 // Toggle console.log debug output for plugin troubleshooting
-var debug = false;
+var debug = true;
 
 function onError(error) {
 	if(debug){
@@ -29,11 +29,19 @@ function getScope(){
 		);
 }
 
+function setExample(){
+	document.getElementById("scopearea").value = "https?://example.com/.*";
+}
+
 document.getElementById("scopebutton").addEventListener("click", (e) => {
 	setScope();
 });
 document.getElementById("scopeloadbutton").addEventListener("click", (e) => {
 	getScope();
+});
+
+document.getElementById("setexample").addEventListener("click", (e) => {
+	setExample();
 });
 
 browser.storage.onChanged.addListener(getScope);

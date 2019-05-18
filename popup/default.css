@@ -1,6 +1,6 @@
 body {
   width: 400px;
-  padding:5px;
+  padding:10px;
 }
 
 textarea {
@@ -9,5 +9,12 @@ textarea {
 }
 
 button {
+	margin-top:0.5em;
 	width:90%;
+	height:3em;
+}
+
+.highlight {
+	color:green;
+	border:1px solid green;
 }

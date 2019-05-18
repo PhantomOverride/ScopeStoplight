@@ -1,5 +1,5 @@
 // Toggle console.log debug output for plugin troubleshooting
-var debug = false;
+var debug = true;
 
 function indicateTabPositive(tabId) {
   browser.pageAction.setIcon(
@@ -17,6 +17,24 @@ function indicateTabNegative(tabId) {
         path: "icons/red.png"
       }
     )
+}
+
+// Pop-up a really annoying pop-up every time an out-of-scope tab is used
+function notifyTabNegative(){
+  var gettingShouldNotify = browser.storage.local.get("annoy");
+  gettingShouldNotify.then(
+    function(value){
+      if (value.annoy) {
+        browser.notifications.create('Danger Zone',
+          {
+          "type": "basic",
+          "title": "Danger Zone",
+          "message": "Page is out of scope! 😡"
+        });
+      }
+    },
+    onError
+  );
 }
 
 // Scope to hold array of regex to match
@@ -73,6 +91,7 @@ function tabListener(tabId, changeInfo, tab) {
       }
       else {
         indicateTabNegative(tabId);
+        notifyTabNegative();
       }
     }
     , 
