@@ -21,15 +21,15 @@ function indicateTabNegative(tabId) {
 
 // Pop-up a really annoying pop-up every time an out-of-scope tab is used
 function notifyTabNegative(){
-  var gettingShouldNotify = browser.storage.local.get("annoy");
+  var gettingShouldNotify = browser.storage.local.get("notify");
   gettingShouldNotify.then(
     function(value){
-      if (value.annoy) {
+      if (value.notify) {
         browser.notifications.create('Danger Zone',
           {
           "type": "basic",
           "title": "Danger Zone",
-          "message": "Page is out of scope! 😡"
+          "message": "🚨🚨🚨 Page is out of scope! 🚨🚨🚨"
         });
       }
     },

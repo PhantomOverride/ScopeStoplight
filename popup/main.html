@@ -6,14 +6,24 @@
 		<link rel="stylesheet" href="default.css"/>
 	</head>
 	<body>
-	<h1>Scope Stoplight 🚨🚦</h1>
-	<p>
-		Enter scope patterns below; one per line. A green scope light means at least one pattern matched. And yes, an empty line matches everything. <br /><br />
-		Here's an example to get you started: <span class="highlight" id="setexample">https?://example.com/.*</span>.
-	</p>
+		<h1>Scope Stoplight 🚨🚦</h1>
+		<p>
+			Enter scope patterns below; one per line. A green scope light means at least one pattern matched. And yes, an empty line matches everything. <br /><br />
+			Here's an example to get you started: <span class="highlight" id="setexample">https?://example.com/.*</span>.
+		</p>
+
 		<textarea id="scopearea" placeholder="Enter scope (one regex per line)"></textarea>
-		<button id="scopebutton" type="button">Save Scope</button>
-		<button id="scopeloadbutton" type="button">Reset to Scope from LocalStorage</button>
+		
+		<div class="buttongroup">
+			<button id="scopebutton" type="button">Save Scope</button>
+			<button id="scopeloadbutton" type="button">Reset to Scope from LocalStorage</button>
+		</div>
+
+		<div class="checkboxgroup">
+			<input id="notify" type="checkbox" name="notify">
+			<label for="notify">Enable notifications when out-of-scope.</label>
+		</div>
+
 		<script src="main.js"></script>
 	</body>
 </html>

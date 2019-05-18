@@ -18,3 +18,9 @@ button {
 	color:green;
 	border:1px solid green;
 }
+
+.buttongroup{}
+
+.checkboxgroup{
+	padding-top:1em;
+}

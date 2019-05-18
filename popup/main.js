@@ -7,6 +7,12 @@ function onError(error) {
 	}
 }
 
+function debugPrint(message) {
+  if(debug){
+    console.log(message);
+  }
+}
+
 function setScope(){
 	rawNewScope = document.getElementById("scopearea").value;
 	var newScope = rawNewScope.split("\n");
@@ -29,6 +35,37 @@ function getScope(){
 		);
 }
 
+function getNotify(){
+	var scope = [];
+	var gettingNotify = browser.storage.local.get("notify");
+	gettingNotify.then(
+		function(newNotify){
+			notify = newNotify.notify;
+			document.getElementById("notify").checked = notify;
+		}
+		,
+		onError
+		);
+}
+function setNotify(e){
+		debugPrint("Notify changed, updating");
+	//debugPrint(e);
+	if(e.target.checked){
+		debugPrint("Setting notify to TRUE");
+		var setting = browser.storage.local.set({
+			notify: true
+		});
+		setting.then(null,onError);
+	}
+	else{
+		debugPrint("Setting notify to FALSE");
+		var setting = browser.storage.local.set({
+			notify: false
+		});
+		setting.then(null,onError);
+	}
+}
+
 function setExample(){
 	document.getElementById("scopearea").value = "https?://example.com/.*";
 }
@@ -39,11 +76,14 @@ document.getElementById("scopebutton").addEventListener("click", (e) => {
 document.getElementById("scopeloadbutton").addEventListener("click", (e) => {
 	getScope();
 });
-
 document.getElementById("setexample").addEventListener("click", (e) => {
 	setExample();
+});
+document.getElementById("notify").addEventListener("change", (e) => {
+	setNotify(e);
 });
 
 browser.storage.onChanged.addListener(getScope);
 
 getScope();
+getNotify();
