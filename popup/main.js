@@ -1,5 +1,5 @@
 // Toggle console.log debug output for plugin troubleshooting
-var debug = true;
+var debug = false;
 
 function onError(error) {
 	if(debug){

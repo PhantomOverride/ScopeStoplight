@@ -1,5 +1,5 @@
 // Toggle console.log debug output for plugin troubleshooting
-var debug = true;
+var debug = false;
 
 function indicateTabPositive(tabId) {
   browser.pageAction.setIcon(
