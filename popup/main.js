@@ -47,9 +47,8 @@ function getNotify(){
 		onError
 		);
 }
+
 function setNotify(e){
-		debugPrint("Notify changed, updating");
-	//debugPrint(e);
 	if(e.target.checked){
 		debugPrint("Setting notify to TRUE");
 		var setting = browser.storage.local.set({
@@ -85,5 +84,6 @@ document.getElementById("notify").addEventListener("change", (e) => {
 
 browser.storage.onChanged.addListener(getScope);
 
+// Update UI to contain the current settings
 getScope();
 getNotify();

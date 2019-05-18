@@ -72,6 +72,7 @@ function debugPrint(message) {
 
 function matchesScope(url) {
   for (var i = scope.length - 1; i >= 0; i--) {
+    if(scope[i] === "") continue; // Ignore empty lines in pattern data
     var exp = new RegExp(scope[i]);
     var res = url.match(exp);
     if (res != null) {
