@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "ScopeStoplight",
-  "version": "1.1",
+  "version": "1.2",
 
   "description": "Shows a green or red icon in the address bar depending on whether or not the current URL matches the set scope.",
 
@@ -17,6 +17,14 @@
 
   "background": {
     "scripts": ["background.js"]
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
   },
 
   "page_action": {

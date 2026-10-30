@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "ScopeStoplight",
+  "version": "1.2",
+  "minimum_chrome_version": "148",
+  "description": "Shows a green or red toolbar icon depending on whether or not the current URL matches the set scope.",
+  "icons": {
+    "32": "icons/red.png"
+  },
+  "permissions": [
+    "notifications",
+    "tabs",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "32": "icons/red.png"
+    },
+    "default_title": "Scope Stoplight",
+    "default_popup": "popup/main.html"
+  }
+}

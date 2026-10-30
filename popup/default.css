@@ -24,3 +24,12 @@ button {
 .checkboxgroup{
 	padding-top:1em;
 }
+
+#scopeerror {
+	color: #b00020;
+	overflow-wrap: anywhere;
+}
+
+#scopeerror:empty {
+	display: none;
+}

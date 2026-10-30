@@ -1,105 +1,87 @@
-// Toggle console.log debug output for plugin troubleshooting
-var debug = false;
-
-function indicateTabPositive(tabId) {
-  browser.pageAction.setIcon(
-      {
-        tabId: tabId,
-        path: "icons/green.png"
-      }
-    )
-}
-
-function indicateTabNegative(tabId) {
-  browser.pageAction.setIcon(
-      {
-        tabId: tabId,
-        path: "icons/red.png"
-      }
-    )
-}
-
-// Pop-up a really annoying pop-up every time an out-of-scope tab is used
-function notifyTabNegative(){
-  var gettingShouldNotify = browser.storage.local.get("notify");
-  gettingShouldNotify.then(
-    function(value){
-      if (value.notify) {
-        browser.notifications.create('Danger Zone',
-          {
-          "type": "basic",
-          "title": "Danger Zone",
-          "message": "🚨🚨🚨 Page is out of scope! 🚨🚨🚨"
-        });
-      }
-    },
-    onError
-  );
-}
-
-// Scope to hold array of regex to match
-var scope = [];
-
-// Initial scope load
-getScope()
-
-// Don't care about what was changed. Just reload scope.
-browser.storage.onChanged.addListener(getScope);
-
-function getScope(){
-  var gettingScope = browser.storage.local.get("scope");
-  gettingScope.then(
-    function(newScope){
-      scope = newScope.scope;
-      debugPrint("Background.js setting scope: " + scope);
-    }
-    ,
-    onError
-    );
-}
+const extension = globalThis.browser || globalThis.chrome;
+const usesPageAction = Boolean(extension.runtime.getManifest().page_action);
+const indicator = usesPageAction ? extension.pageAction : extension.action;
+const updates = new Map();
 
 function onError(error) {
-  if(debug){
-    console.log(error);
+  console.error("ScopeStoplight:", error);
+}
+
+function matchesScope(url, scope = []) {
+  if (typeof url !== "string" || url === "") return false;
+  if (/^(about|chrome|edge|brave|vivaldi|opera):/.test(url)) return true;
+  if (!Array.isArray(scope)) return false;
+  try {
+    const patterns = scope.filter(pattern => pattern !== "").map(pattern => {
+      if (typeof pattern !== "string") throw new TypeError("Invalid scope pattern");
+      return new RegExp(pattern);
+    });
+    return patterns.some(pattern => pattern.test(url));
+  } catch (error) {
+    return false;
   }
 }
 
-function debugPrint(message) {
-  if(debug){
-    console.log(message);
-  }
+async function setIndicator(tabId, inScope) {
+  await indicator.setIcon({
+    tabId,
+    path: inScope ? "icons/green.png" : "icons/red.png"
+  });
+  if (usesPageAction) await extension.pageAction.show(tabId);
 }
 
-function matchesScope(url) {
-  if(url.substring(0,6) === "about:") return true; // Ignore built-in pages such as about:preferences
-  for (var i = scope.length - 1; i >= 0; i--) {
-    if(scope[i] === "") continue; // Ignore empty lines in pattern data
-    var exp = new RegExp(scope[i]);
-    var res = url.match(exp);
-    if (res != null) {
-      return true;
+function updateTab(tabId, notify = false) {
+  const previous = updates.get(tabId);
+  const update = {};
+  update.promise = (previous ? previous.promise : Promise.resolve()).then(async () => {
+    if (updates.get(tabId) !== update) return;
+    const [tab, settings] = await Promise.all([
+      extension.tabs.get(tabId),
+      extension.storage.local.get({ scope: [], notify: false })
+    ]);
+    if (updates.get(tabId) !== update) return;
+    const inScope = matchesScope(tab.url, settings.scope);
+    await setIndicator(tabId, inScope);
+    if (updates.get(tabId) !== update) return;
+    if (notify && tab.active && tab.url && !inScope && settings.notify === true) {
+      await extension.notifications.create("Danger Zone", {
+        type: "basic",
+        iconUrl: "icons/red.png",
+        title: "Danger Zone",
+        message: "Page is out of scope!"
+      });
     }
-  }
-  return false;
-}
-
-function tabListener(tabId, changeInfo, tab) {
-  browser.pageAction.hide(tabId);
-  var res = browser.tabs.get(tabId);
-  res.then(
-    function(value){
-      if(matchesScope(value.url)) {
-        indicateTabPositive(tabId);
-      }
-      else {
-        indicateTabNegative(tabId);
-        notifyTabNegative();
-      }
+  }).catch(async error => {
+    onError(error);
+    if (updates.get(tabId) === update) {
+      await setIndicator(tabId, false).catch(onError);
     }
-    , 
-    onError
-  );
-  browser.pageAction.show(tabId);
+  }).finally(() => {
+    if (updates.get(tabId) === update) updates.delete(tabId);
+  });
+  updates.set(tabId, update);
+  return update.promise;
 }
 
-browser.tabs.onUpdated.addListener(tabListener);
+async function refreshTabs() {
+  try {
+    const tabs = await extension.tabs.query({});
+    await Promise.all(tabs.map(tab => updateTab(tab.id)));
+  } catch (error) {
+    onError(error);
+  }
+}
+
+extension.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.url !== undefined || changeInfo.status === "complete") {
+    return updateTab(tabId, changeInfo.status === "complete");
+  }
+});
+extension.tabs.onActivated.addListener(({ tabId }) => updateTab(tabId));
+extension.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && Object.hasOwn(changes, "scope")) return refreshTabs();
+});
+extension.runtime.onInstalled.addListener(refreshTabs);
+extension.runtime.onStartup.addListener(refreshTabs);
+
+if (usesPageAction) refreshTabs();

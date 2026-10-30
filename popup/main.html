@@ -8,10 +8,11 @@
 		<h1>Scope Stoplight 🚨🚦</h1>
 		<p>
 			Enter scope patterns below; one per line. A green scope light means at least one pattern matched.<br /><br />
-			Here's an example to get you started: <span class="highlight" id="setexample">https?://example.com/.*</span>.
+			Here's an example to get you started: <span class="highlight" id="setexample">^https?://example\.com/.*</span>.
 		</p>
 
-		<textarea id="scopearea" placeholder="Enter scope (one regex per line)"></textarea>
+		<textarea id="scopearea" aria-label="Scope patterns" aria-describedby="scopeerror" placeholder="Enter scope (one regex per line)"></textarea>
+		<p id="scopeerror" role="alert"></p>
 		
 		<div class="buttongroup">
 			<button id="scopebutton" type="button">Save Scope</button>

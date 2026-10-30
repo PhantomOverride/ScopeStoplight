@@ -1,7 +1,9 @@
 // Toggle console.log debug output for plugin troubleshooting
 var debug = false;
+const extension = globalThis.browser || globalThis.chrome;
 
 function onError(error) {
+	document.getElementById("scopeerror").textContent = "Unable to read or save settings.";
 	if(debug){
 		console.log("Error: " + error);
 	}
@@ -13,52 +15,54 @@ function debugPrint(message) {
   }
 }
 
-function setScope(){
-	rawNewScope = document.getElementById("scopearea").value;
-	var newScope = rawNewScope.split("\n");
-	var setting = browser.storage.local.set({
-		scope: newScope
-	});
-	setting.then(null,onError);
+async function setScope(){
+	const newScope = document.getElementById("scopearea").value.split("\n");
+	const errorMessage = document.getElementById("scopeerror");
+	errorMessage.textContent = "";
+	for (const [index, pattern] of newScope.entries()) {
+		try {
+			new RegExp(pattern);
+		} catch (error) {
+			errorMessage.textContent = "Invalid regex on line " + (index + 1) + ": " + error.message;
+			return;
+		}
+	}
+	try {
+		await extension.storage.local.set({ scope: newScope });
+	} catch (error) {
+		onError(error);
+	}
 }
 
 function getScope(){
-	var scope = [];
-	var gettingScope = browser.storage.local.get("scope");
-	gettingScope.then(
+	return extension.storage.local.get({ scope: [] }).then(
 		function(newScope){
-			scope = newScope.scope;
+			const scope = Array.isArray(newScope.scope) ? newScope.scope : [];
 			document.getElementById("scopearea").value = scope.join("\n");
+			document.getElementById("scopeerror").textContent = "";
 		}
-		,
-		onError
-		);
+	).catch(onError);
 }
 
 function getNotify(){
-	var scope = [];
-	var gettingNotify = browser.storage.local.get("notify");
-	gettingNotify.then(
+	return extension.storage.local.get({ notify: false }).then(
 		function(newNotify){
-			notify = newNotify.notify;
-			document.getElementById("notify").checked = notify;
+			document.getElementById("notify").checked = newNotify.notify === true;
 		}
-		,
-		onError
-		);
+	).catch(onError);
 }
 
 function setNotify(e){
 	if(e.target.checked){
 		debugPrint("Setting notify to TRUE");
-		var setting = browser.storage.local.set({
+		var setting = extension.storage.local.set({
 			notify: true
 		});
 		setting.then(null,onError);
 	}
 	else{
 		debugPrint("Setting notify to FALSE");
-		var setting = browser.storage.local.set({
+		var setting = extension.storage.local.set({
 			notify: false
 		});
 		setting.then(null,onError);
@@ -66,7 +70,7 @@ function setNotify(e){
 }
 
 function setExample(){
-	document.getElementById("scopearea").value = "https?://example.com/.*";
+	document.getElementById("scopearea").value = "^https?://example\\.com/.*";
 }
 
 document.getElementById("scopebutton").addEventListener("click", (e) => {
@@ -82,7 +86,11 @@ document.getElementById("notify").addEventListener("change", (e) => {
 	setNotify(e);
 });
 
-browser.storage.onChanged.addListener(getScope);
+extension.storage.onChanged.addListener((changes, area) => {
+	if (area !== "local") return;
+	if (Object.hasOwn(changes, "scope")) getScope();
+	if (Object.hasOwn(changes, "notify")) getNotify();
+});
 
 // Update UI to contain the current settings
 getScope();
